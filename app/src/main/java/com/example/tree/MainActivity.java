@@ -1,9 +1,11 @@
 package com.example.tree;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,29 +25,28 @@ public class MainActivity extends AppCompatActivity {
     DateFormat monthFormat = new SimpleDateFormat("MM");
 
     //Goals
-    private int stepsGoal;
-    private int cupsOfWaterGoal;
-    private int caloriesConsumedGoal;
-    private int numberOfMealsGoal;
-    private int hoursOfSleepGoal;
-    private int hoursOfExerciseGoal;
+    private int stepsGoal = 10000;
+    private int cupsOfWaterGoal = 8;
+    private int caloriesConsumedGoal = 2000;
+    private int numberOfMealsGoal = 3;
+    private int hoursOfSleepGoal = 8;
+    private int hoursOfExerciseGoal = 1;
+
+    //User's input variables from questions activity
+    static final String STEPS_WALKED = "stepsWalked";
+    static final String CUPS_WATER = "cupsWater";
+    static final String CALORIES_CONSUMED = "caloriesConsumed";
+    static final String MEALS_NUMBER = "mealsNumber";
+    static final String HOURS_SLEEP = "hoursSleep";
+    static final String HOURS_EXERCISE = "hoursExercise";
 
     //Current variables
     private int todayScore;
     private int todayStage;
     private int todayDayOfYear;
 
-    //New
-    private int score; //(score at a given date)
-
-
     //Database variables
-    private int lastDayStage;
     private int startDate;
-    private int lastDayScore;
-
-    private int[] stages = {R.drawable.stage1,R.drawable.stage2,R.drawable.stage3,R.drawable.stage4,R.drawable.stage5,R.drawable.stage6,
-            R.drawable.stage7,R.drawable.stage8,R.drawable.stage9,R.drawable.stage10,R.drawable.stage11,R.drawable.stage13,R.drawable.stage14};
 
 
     @Override
@@ -56,11 +57,11 @@ public class MainActivity extends AppCompatActivity {
         databaseHelper = new MyDatabaseHelper(this, null, null, 1);
 
 
-
         //finds start date
         if(databaseHelper.hasData()){
-            startDate = databaseHelper.findDateWithScore(0);
+            startDate = databaseHelper.findDateWithID(1);
         }
+
         //Sets home screen button to Sunday, Monday, Tuesday, etc.
         DateFormat dayFormat = new SimpleDateFormat("EEEE");
         String day = dayFormat.format(Calendar.getInstance().getTime());
@@ -75,24 +76,17 @@ public class MainActivity extends AppCompatActivity {
         String currentDayOfMonthString = dateFormat.format(Calendar.getInstance().getTime());
         int currentDayOfMonthInt = Integer.valueOf(currentDayOfMonthString);
         todayDayOfYear = outOf365(currentDayOfMonthInt,currentMonthInt);
-        lastDayScore = databaseHelper.findScoreWithDate(todayDayOfYear-1);
 
-        //updates tree image
-        if(lastDayScore >= 45){
-            //grow two stages
-
+        int scoreSum = 0;
+        for(int i = todayDayOfYear; i>=startDate;i--){
+            scoreSum += databaseHelper.findScoreWithDate(i);
         }
-        if(lastDayScore >=30&&lastDayScore<45){
-            //grow one stage
-        }
-        else{
-            //doesn't grow any stages
-        }
+        todayStage = calculateStage(scoreSum);
 
 
-
-
-
+        //grows tree upon opening
+        ImageView treeImage = (ImageView) findViewById(R.id.imageViewTree);
+        treeImage.setBackgroundResource(todayStage);
 
 
     }
@@ -100,6 +94,8 @@ public class MainActivity extends AppCompatActivity {
 
     public void goToQuestions(View v){
         //sends user to questions activity***
+        Intent intent = new Intent(MainActivity.this, QuestionsActivity.class);
+        startActivity(intent);
 
         //sets button to either "Grow Tree' or "Plant Tree"
         Button submit = (Button) findViewById(R.id.buttonSubmit);
@@ -117,23 +113,31 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void submit(View v) {
+        // sends you back to Main Activity
         // gets score name and value from edittext and uses it to create a new Scores object
         // it adds this element to the database and then reprints the database to show the change
 
-        EditText steps = (EditText) findViewById(R.id.editTextSteps);
-        EditText water = (EditText) findViewById(R.id.editTextCups);
-        EditText meals = (EditText) findViewById(R.id.editTextMeals);
-        EditText calories = (EditText) findViewById(R.id.editTextCalories);
-        EditText sleep = (EditText) findViewById(R.id.editTextSleep);
-        EditText exercise = (EditText) findViewById(R.id.editTextExercise);
+//        EditText steps = (EditText) findViewById(R.id.editTextSteps);
+//        EditText water = (EditText) findViewById(R.id.editTextCups);
+//        EditText meals = (EditText) findViewById(R.id.editTextMeals);
+//        EditText calories = (EditText) findViewById(R.id.editTextCalories);
+//        EditText sleep = (EditText) findViewById(R.id.editTextSleep);
+//        EditText exercise = (EditText) findViewById(R.id.editTextExercise);
+//
+//
+//        int inputSteps = Integer.parseInt(steps.getText().toString());
+//        int inputCupsOfWater = Integer.parseInt(water.getText().toString());
+//        int inputMealsEaten = Integer.parseInt(meals.getText().toString());
+//        int inputCaloriesConsumed = Integer.parseInt(calories.getText().toString());
+//        int inputHoursOfSleep = Integer.parseInt(sleep.getText().toString());
+//        int inputHoursOfExercise = Integer.parseInt(exercise.getText().toString());
 
-
-        int inputSteps = Integer.parseInt(steps.getText().toString());;
-        int inputCupsOfWater = Integer.parseInt(water.getText().toString());;
-        int inputMealsEaten = Integer.parseInt(meals.getText().toString());;
-        int inputCaloriesConsumed = Integer.parseInt(calories.getText().toString());;
-        int inputHoursOfSleep = Integer.parseInt(sleep.getText().toString());;
-        int inputHoursOfExercise = Integer.parseInt(exercise.getText().toString());;
+        int inputSteps = 8000;
+        int inputCupsOfWater = 3;
+        int inputMealsEaten = 2;
+        int inputCaloriesConsumed = 1500;
+        int inputHoursOfSleep = 4;
+        int inputHoursOfExercise = 0;
 
 
         if(inputSteps>=stepsGoal&&inputSteps<stepsGoal*1.5){
@@ -176,6 +180,8 @@ public class MainActivity extends AppCompatActivity {
         Scores score = new Scores(todayScore, todayDayOfYear);
 
         databaseHelper.addScore(score);
+
+        //** disables user from going back to questions intent
     }
 
 
@@ -265,5 +271,63 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return dayOutOf365;
+    }
+
+    public int calculateStage(int scoreSum) {
+        if (scoreSum > 780) {
+            return R.drawable.stage14;
+
+        }
+        if (scoreSum > 720 && scoreSum <= 780) {
+            return R.drawable.stage13;
+
+        }
+        if (scoreSum > 660 && scoreSum <= 720) {
+            return R.drawable.stage12;
+
+        }
+        if (scoreSum > 600 && scoreSum <= 660) {
+            return R.drawable.stage11;
+
+        }
+        if (scoreSum > 540 && scoreSum <= 600) {
+            return R.drawable.stage10;
+
+        }
+        if (scoreSum > 480 && scoreSum <= 540) {
+            return R.drawable.stage9;
+
+        }
+        if (scoreSum > 420 && scoreSum <= 480) {
+            return R.drawable.stage8;
+
+        }
+        if (scoreSum > 360 && scoreSum <= 420) {
+            return R.drawable.stage7;
+
+        }
+        if (scoreSum > 300 && scoreSum <= 360) {
+            return R.drawable.stage6;
+
+        }
+        if (scoreSum > 240 && scoreSum <= 300) {
+            return R.drawable.stage5;
+
+        }
+        if (scoreSum > 180 && scoreSum <= 240) {
+            return R.drawable.stage4;
+
+        }
+        if (scoreSum > 120 && scoreSum <= 180) {
+            return R.drawable.stage3;
+
+        }
+        if (scoreSum > 60 && scoreSum <= 120) {
+            return R.drawable.stage2;
+
+        }
+
+        return -1;
+
     }
 }

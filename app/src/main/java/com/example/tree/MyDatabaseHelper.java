@@ -22,7 +22,7 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
 
     //constructor
     public MyDatabaseHelper(Context context, String name, SQLiteDatabase.CursorFactory factory,
-            int version) {
+                            int version) {
         super(context, DATABASE_NAME, factory, DATABASE_VERSION);
     }
 
@@ -81,11 +81,11 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
         return score;
     }
 
-    public int findDateWithScore(int score) {
+    public int findDateWithID(int id) {
 
         int date = 0;
         SQLiteDatabase db = getWritableDatabase();
-        String query = "SELECT FROM " + TABLE_SCORES + " WHERE " + COLUMN_SCORE + " = '" + score;
+        String query = "SELECT FROM " + TABLE_SCORES + " WHERE " + COLUMN_ID + " = '" + id;
         Cursor c = db.rawQuery(query, null);
 
         // Move the cursor to the first position and then move through the db to the last
@@ -101,7 +101,23 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
     }
 
     public boolean hasData(){
+        boolean hasData;
+        SQLiteDatabase db = getWritableDatabase();
+        String query = "SELECT * FROM " + TABLE_SCORES + " WHERE 1";
+        // This means to select all from the database
 
+        // The cursor will extract the entries from the database
+        Cursor c = db.rawQuery(query, null);
+
+        if(c.getCount()==0){
+            hasData = false;
+        }
+
+        else{
+            hasData = true;
+        }
+
+        return hasData;
     }
 
     // Right now this method will remove all entries with this name
@@ -144,4 +160,3 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
 //    }
 
 }
-
