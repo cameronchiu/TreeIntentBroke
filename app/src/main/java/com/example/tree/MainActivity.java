@@ -15,6 +15,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+
 public class MainActivity extends AppCompatActivity {
 
     EditText nameEditText;
@@ -78,8 +79,10 @@ public class MainActivity extends AppCompatActivity {
         todayDayOfYear = outOf365(currentDayOfMonthInt,currentMonthInt);
 
         int scoreSum = 0;
-        for(int i = todayDayOfYear; i>=startDate;i--){
-            scoreSum += databaseHelper.findScoreWithDate(i);
+        if(databaseHelper.hasData()) {
+            for (int i = todayDayOfYear; i >= startDate; i--) {
+                scoreSum += databaseHelper.findScoreWithDate(i);
+            }
         }
         todayStage = calculateStage(scoreSum);
 
@@ -94,22 +97,21 @@ public class MainActivity extends AppCompatActivity {
 
     public void goToQuestions(View v){
         //sends user to questions activity***
-        Intent intent = new Intent(MainActivity.this, QuestionsActivity.class);
+        Button buttonSubmit = (Button) findViewById(R.id.buttonSubmit);
+
+        Intent intent = new Intent(this, QuestionsActivity.class);
         startActivity(intent);
 
+
+
         //sets button to either "Grow Tree' or "Plant Tree"
-        Button submit = (Button) findViewById(R.id.buttonSubmit);
-        if(startDate==todayDayOfYear){
-            submit.setText("Plant Tree");
-        }
-        else{
-            submit.setText("Grow Tree");
-        }
-
+//        if(startDate==todayDayOfYear){
+//            buttonSubmit.setText("Plant Tree");
+//        }
+//        else{
+//            buttonSubmit.setText("Grow Tree");
+//        }
     }
-
-
-
 
 
     public void submit(View v) {
@@ -327,7 +329,7 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
-        return -1;
+        return R.drawable.stage1;
 
     }
 }
